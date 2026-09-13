@@ -1,4 +1,5 @@
 using System;
+using Unity.Android.Gradle.Manifest;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -22,6 +23,7 @@ public class PlayerLocomotion : MonoBehaviour
     [Header("Movement Flags")]
     public bool isSprinting;
     public bool isGrounded;
+    public bool isJumping;
 
 
     [Header("Movement Speeds")]
@@ -29,6 +31,11 @@ public class PlayerLocomotion : MonoBehaviour
     public float runningSpeed = 5;
     public float sprintingSpeed = 7;
     public float rotationSpeed = 15;
+
+
+    [Header("Jumping Speeds")]
+    public float jumpHeight = 3;
+    public float GravityIntensity = -15;
 
     public void Awake()
     {
@@ -40,9 +47,10 @@ public class PlayerLocomotion : MonoBehaviour
 
     }
 
-
     public void HandleAllMovement()
     {
+         if(isJumping)
+            return;
 
         if(playerManager.isInteracting)
             return;
@@ -52,9 +60,11 @@ public class PlayerLocomotion : MonoBehaviour
         HandleRotation();
     }
 
-
    private void HandleMovement()
     {
+        if(isJumping)
+            return;
+
         if (isSprinting)
         {
             moveDirection = moveDirection * sprintingSpeed;
@@ -94,6 +104,9 @@ public class PlayerLocomotion : MonoBehaviour
 
     private void HandleRotation()
     {
+        if(isJumping)
+        return;
+
         Vector3 targetDirection = Vector3.zero;
         targetDirection = cameraObject.forward * inputManager.verticalInput;
         targetDirection = targetDirection + cameraObject.right * inputManager.horizontalInput;
@@ -115,7 +128,7 @@ public class PlayerLocomotion : MonoBehaviour
         Vector3 raycastOrigin = transform.position;
         raycastOrigin.y = raycastOrigin.y + rayCastHeightOffset;
 
-        if (!isGrounded)
+        if (!isGrounded && !isJumping)
         {
             if (!playerManager.isInteracting)
             {
@@ -143,6 +156,32 @@ public class PlayerLocomotion : MonoBehaviour
 
     }
 
+    public void HandleJumping()
+    {
+        if (isGrounded)
+        {
+            animatorManager.animator.SetBool("isJumping", true);
+            animatorManager.PlayTargetAnimation("Jump", false);
 
+            float jumpingVelocity = Mathf.Sqrt(-2 * GravityIntensity * jumpHeight);
+            Vector3 playerVelocity = moveDirection;
+            playerVelocity.y = jumpingVelocity;
+            playerrigidbody.linearVelocity = playerVelocity;
+        }
+    }
+
+    public class ResetIsJumping : StateMachineBehaviour
+{
+    override public void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+    {
+        animator.SetBool("isJumping", false);
+
+        PlayerLocomotion locomotion = animator.GetComponent<PlayerLocomotion>();
+        if (locomotion != null)
+        {
+            locomotion.isJumping = false;
+        }
+    }
+}
 
 }
