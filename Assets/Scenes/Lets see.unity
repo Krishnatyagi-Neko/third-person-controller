@@ -631,6 +631,9 @@ MonoBehaviour:
   mouseSensitivity: 0.12
   cameraDistance: 5
   cameraHeight: 1.6
+  dashSpeed: 50
+  dashDuration: 0.2
+  dashCooldown: 1
 --- !u!54 &2101901333
 Rigidbody:
   m_ObjectHideFlags: 0
