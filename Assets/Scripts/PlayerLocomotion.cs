@@ -9,7 +9,7 @@ public class PlayerLocomotion : MonoBehaviour
     PlayerManager playerManager;
     AnimatorManager animatorManager;
     InputManager inputManager;
-    Rigidbody playerrigidbody;
+    public Rigidbody playerrigidbody;
 
     Vector3 moveDirection;
     Transform cameraObject;
@@ -140,6 +140,8 @@ public class PlayerLocomotion : MonoBehaviour
         {
             animatorManager.PlayTargetAnimation("Falling", true);
         }
+
+        animatorManager.animator.SetBool("isUsingRootMotion",false);
         inAirTimer = inAirTimer + Time.deltaTime;
         playerrigidbody.AddForce(transform.forward * leapingVelocity);
         playerrigidbody.AddForce(-Vector3.up * fallingVelocity * inAirTimer);   
@@ -190,12 +192,23 @@ public class PlayerLocomotion : MonoBehaviour
         }
     }
 
-    private void OnDrawGizmos()
+    /*  private void OnDrawGizmos()
     {
         Vector3 origin = transform.position + Vector3.up * rayCastHeightOffset;
         Gizmos.color = isGrounded ? Color.green : Color.red;
         Gizmos.DrawWireSphere(origin + Vector3.down * 0.3f, 0.2f);
     }
+    */
 
 
+    public void HandleDodge()
+    {
+        if(playerManager.isInteracting)
+        return;
+
+
+        animatorManager.PlayTargetAnimation("Dodge", true, true);
+
+
+    }
 }

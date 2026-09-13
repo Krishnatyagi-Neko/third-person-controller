@@ -2702,7 +2702,7 @@ GameObject:
   - component: {fileID: 1141018404}
   - component: {fileID: 1141018403}
   m_Layer: 0
-  m_Name: Cube
+  m_Name: Slope
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2826,6 +2826,7 @@ MonoBehaviour:
   verticalInput: 0
   horizontalInput: 0
   b_Input: 0
+  x_Input: 0
   jump_Input: 0
 --- !u!114 &1184017766
 MonoBehaviour:
@@ -2839,6 +2840,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5798d2eda48b1a1459fe6c633479c8db, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerLocomotion
+  playerrigidbody: {fileID: 0}
   inAirTimer: 0
   leapingVelocity: 3
   fallingVelocity: 33
@@ -2918,6 +2920,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerManager
   isInteracting: 0
+  isUsingRootMotion: 0
 --- !u!114 &1184017770
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.XR;
 
 public class InputManager : MonoBehaviour
 {
@@ -18,6 +19,7 @@ public class InputManager : MonoBehaviour
     public float horizontalInput;
 
     public bool b_Input;
+    public bool x_Input;
     public bool jump_Input;
 
 
@@ -40,6 +42,7 @@ public class InputManager : MonoBehaviour
 
         playercontrols.PlayerActions.B.performed += i => b_Input = true;
         playercontrols.PlayerActions.B.canceled += i => b_Input = false;
+        playercontrols.PlayerActions.X.performed += i => x_Input = true;
         playercontrols.PlayerActions.Jump.performed += i => jump_Input = true;
         //playercontrols.PlayerActions.Jump.canceled += i => jump_Input = false;
 
@@ -58,6 +61,7 @@ public class InputManager : MonoBehaviour
         HandleSprintingInput();
         HandleMovementInput();
         HandleJumpingInput();
+        HandleDodgeInput();
     }
 
     private void HandleMovementInput()
@@ -91,6 +95,15 @@ public class InputManager : MonoBehaviour
         {
             jump_Input = false;
             playerLocomotion.HandleJumping();
+        }
+    }
+
+    private void HandleDodgeInput()
+    {
+        if (x_Input)
+        {
+            x_Input = false;
+            playerLocomotion.HandleDodge();
         }
     }
 
