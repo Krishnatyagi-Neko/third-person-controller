@@ -38,10 +38,10 @@ public class CameraManager : MonoBehaviour
 
 
     private void FollowTarget(Transform target)
-    {
+{
     Vector3 targetPosition = Vector3.SmoothDamp(transform.position, target.position, ref camerafollowVelocity, cameraFollowSpeed);
-    transform.position = target.position; // <- bug, ignores the smoothed value
-    }
+    transform.position = targetPosition;
+}
 
     public void HandleAllCameraMovement()
     {

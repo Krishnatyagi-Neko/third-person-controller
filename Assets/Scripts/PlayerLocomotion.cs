@@ -49,6 +49,8 @@ public class PlayerLocomotion : MonoBehaviour
 
     public void HandleAllMovement()
     {
+        HandleFallingAndLanding();
+
          if(isJumping)
             return;
 
@@ -123,45 +125,43 @@ public class PlayerLocomotion : MonoBehaviour
     }
 
     private void HandleFallingAndLanding()
+{
+    RaycastHit hit;
+    Vector3 raycastOrigin = transform.position;
+    raycastOrigin.y = raycastOrigin.y + rayCastHeightOffset;
+
+    if (!isGrounded && !isJumping)
     {
-        RaycastHit hit;
-        Vector3 raycastOrigin = transform.position;
-        raycastOrigin.y = raycastOrigin.y + rayCastHeightOffset;
-
-        if (!isGrounded && !isJumping)
+        if (!playerManager.isInteracting)
         {
-            if (!playerManager.isInteracting)
-            {
-                animatorManager.PlayTargetAnimation("Falling", true);
-            }
-
-            inAirTimer = inAirTimer + Time.deltaTime;
-            playerrigidbody.AddForce(transform.forward * leapingVelocity);
-            playerrigidbody.AddForce(-Vector3.up * fallingVelocity * inAirTimer);   
-        
+            animatorManager.PlayTargetAnimation("Falling", true);
         }
-            if(Physics.SphereCast(raycastOrigin, 0.2f, -Vector3.up, out hit, 0.3f, groundLayer))
-            {
-                if(!isGrounded && playerManager.isInteracting)
-                {
-                    animatorManager.PlayTargetAnimation("Land", true);
-                }
-                inAirTimer = 0;
-                isGrounded = true;
-            }
-            else
-            {
-                isGrounded = false;
-            }
-
+        inAirTimer = inAirTimer + Time.deltaTime;
+        playerrigidbody.AddForce(transform.forward * leapingVelocity);
+        playerrigidbody.AddForce(-Vector3.up * fallingVelocity * inAirTimer);   
     }
+
+    if(Physics.SphereCast(raycastOrigin, 0.2f, -Vector3.up, out hit, 0.6f, groundLayer))
+    {
+        if(!isGrounded && playerManager.isInteracting)
+        {
+            animatorManager.PlayTargetAnimation("Land", true);
+        }
+        inAirTimer = 0;
+        isGrounded = true;
+    }
+    else
+    {
+        isGrounded = false;
+    }
+}
 
     public void HandleJumping()
     {
         if (isGrounded)
         {
             animatorManager.animator.SetBool("isJumping", true);
-            animatorManager.PlayTargetAnimation("Jump", false);
+            animatorManager.PlayTargetAnimation("Jumping", false); // <- match the actual state name
 
             float jumpingVelocity = Mathf.Sqrt(-2 * GravityIntensity * jumpHeight);
             Vector3 playerVelocity = moveDirection;
@@ -170,18 +170,12 @@ public class PlayerLocomotion : MonoBehaviour
         }
     }
 
-    public class ResetIsJumping : StateMachineBehaviour
-{
-    override public void OnStateExit(Animator animator, AnimatorStateInfo stateInfo, int layerIndex)
+    private void OnDrawGizmos()
     {
-        animator.SetBool("isJumping", false);
-
-        PlayerLocomotion locomotion = animator.GetComponent<PlayerLocomotion>();
-        if (locomotion != null)
-        {
-            locomotion.isJumping = false;
-        }
+        Vector3 origin = transform.position + Vector3.up * rayCastHeightOffset;
+        Gizmos.color = isGrounded ? Color.green : Color.red;
+        Gizmos.DrawWireSphere(origin + Vector3.down * 0.3f, 0.2f);
     }
-}
+
 
 }
