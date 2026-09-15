@@ -2,6 +2,7 @@ using System;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Rendering;
+using System.Collections;
 
 public class PlayerLocomotion : MonoBehaviour
 {
@@ -37,6 +38,13 @@ public class PlayerLocomotion : MonoBehaviour
     public float jumpHeight = 3;
     public float GravityIntensity = -15;
 
+    [Header("Dashing")]
+    public float dashSpeed = 15f;
+    public float dashDuration = 0.2f;
+    public float dashCooldown = 1f;
+    public bool isDashing;
+    private float lastDashTime = -Mathf.Infinity;
+
     public void Awake()
     {
         animatorManager = GetComponent<AnimatorManager>();
@@ -49,14 +57,16 @@ public class PlayerLocomotion : MonoBehaviour
 
     public void HandleAllMovement()
     {
+        if (isDashing)
+            return;
+
         HandleFallingAndLanding();
 
-         if(isJumping)
+        if (isJumping)
             return;
 
-        if(playerManager.isInteracting)
+        if (playerManager.isInteracting)
             return;
-
 
         HandleMovement();
         HandleRotation();
@@ -126,6 +136,8 @@ public class PlayerLocomotion : MonoBehaviour
 
     private void HandleFallingAndLanding()
 {
+
+    if (isDashing) return; // add this line at the top
     RaycastHit hit;
     Vector3 raycastOrigin = transform.position;
     raycastOrigin.y = raycastOrigin.y + rayCastHeightOffset;
@@ -163,17 +175,21 @@ public class PlayerLocomotion : MonoBehaviour
         isGrounded = false;
     }
 
-    if(isGrounded && !isJumping)
-        {
-            if(playerManager.isInteracting || inputManager.moveAmount > 0)
-            {
-                transform.position = Vector3.Lerp(transform.position, targetPosition, Time.deltaTime / 0.1f);
-            }
-            else
-            {
-                transform.position = targetPosition;
-            }
-        }
+    if (isGrounded && !isJumping && !isDashing)
+{
+    if (playerManager.isInteracting || inputManager.moveAmount > 0)
+    {
+        transform.position = Vector3.Lerp(
+            transform.position,
+            targetPosition,
+            Time.deltaTime / 0.1f
+        );
+    }
+    else
+    {
+        transform.position = targetPosition;
+    }
+}
 
 }
 
@@ -207,7 +223,62 @@ public class PlayerLocomotion : MonoBehaviour
 
 
         animatorManager.PlayTargetAnimation("Dodge", true, true);
-
-
     }
+
+    public void HandleDash()
+    {
+        if (isDashing) return;
+        if (isJumping) return;
+        if (playerManager.isInteracting) return;
+        if (Time.time < lastDashTime + dashCooldown) return;
+
+        StartCoroutine(DashRoutine());
+    }
+
+    private IEnumerator DashRoutine()
+{
+    isDashing = true;
+    lastDashTime = Time.time;
+
+    Vector3 dashDirection = moveDirection;
+
+    // If player isn't moving, dash in the direction they're facing
+    if (dashDirection.magnitude < 0.1f)
+    {
+        dashDirection = transform.forward;
+    }
+
+    // Dash only horizontally
+    dashDirection.y = 0f;
+    dashDirection.Normalize();
+
+    float elapsed = 0f;
+
+    while (elapsed < dashDuration)
+    {
+        Vector3 velocity = playerrigidbody.linearVelocity;
+
+        playerrigidbody.linearVelocity = new Vector3(
+            dashDirection.x * dashSpeed,
+            velocity.y,
+            dashDirection.z * dashSpeed
+        );
+
+        elapsed += Time.fixedDeltaTime;
+
+        yield return new WaitForFixedUpdate();
+    }
+
+    // Stop horizontal movement after dash
+    Vector3 finalVelocity = playerrigidbody.linearVelocity;
+
+    playerrigidbody.linearVelocity = new Vector3(
+        0f,
+        finalVelocity.y,
+        0f
+    );
+
+    isDashing = false;
 }
+}
+
